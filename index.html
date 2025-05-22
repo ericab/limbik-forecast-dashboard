@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limbik Forecast Analysis Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --limbik-dark: #0A0A0A;
+            --limbik-navy: #1A1D29;
+            --limbik-primary-green: #00C896;
+            --limbik-primary-purple: #6366F1;
+            --limbik-gray-light: #F8F9FA;
+            --limbik-gray-medium: #6C757D;
+            --limbik-gray-dark: #343A40;
+            --limbik-white: #FFFFFF;
+            --limbik-blue-dark: #0F1419;
+            --limbik-surface: #1E2329;
+            --limbik-accent: #8B5CF6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--limbik-dark);
+            color: var(--limbik-white);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Background geometric shapes */
+        .bg-shape {
+            position: absolute;
+            background: linear-gradient(135deg, var(--limbik-primary-green), var(--limbik-primary-purple));
+            opacity: 0.1;
+            border-radius: 20px;
+            z-index: 0;
+        }
+        
+        .bg-shape-1 {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            right: 5%;
+            transform: rotate(45deg);
+        }
+        
+        .bg-shape-2 {
+            width: 150px;
+            height: 150px;
+            bottom: 20%;
+            left: 10%;
+            transform: rotate(-30deg);
+        }
+        
+        .bg-shape-3 {
+            width: 100px;
+            height: 100px;
+            top: 60%;
+            right: 20%;
+            transform: rotate(60deg);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: var(--limbik-white);
+            padding: 50px 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--limbik-dark);
+        }
+
+        .header .subtitle {
+            font-size: 1.3em;
+            color: var(--limbik-gray-dark);
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        .header .tagline {
+            font-size: 0.95em;
+            color: var(--limbik-gray-medium);
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--limbik-surface) 0%, var(--limbik-navy) 100%);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .metric-card:hover::before {
+            left: 100%;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--limbik-primary-green);
+            box-shadow: 0 10px 30px rgba(0, 200, 150, 0.2);
+        }
+
+        .metric-number {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .metric-label {
+            color: var(--limbik-gray-light);
+            font-size: 1.1em;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chart-container {
+            background: linear-gradient(135deg, var(--limbik-surface) 0%, var(--limbik-blue-dark) 100%);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 200, 150, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chart-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--limbik-white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--limbik-primary-green), var(--limbik-primary-purple));
+            border-radius: 2px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 320px;
+            padding: 20px;
+        }
+
+        /* CSS-based chart styles */
+        .css-chart {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: end;
+            height: 200px;
+            gap: 2px;
+            margin: 20px 0;
+        }
+
+        .bar {
+            background: linear-gradient(0deg, var(--limbik-primary-purple), var(--limbik-primary-green));
+            border-radius: 2px 2px 0 0;
+            transition: all 0.3s ease;
+            position: relative;
+            min-width: 8px;
+        }
+
+        .bar:hover {
+            filter: brightness(1.2);
+            transform: scaleY(1.05);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            color: var(--limbik-gray-medium);
+            writing-mode: horizontal-tb;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            color: var(--limbik-white);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .bar:hover .bar-value {
+            opacity: 1;
+        }
+
+        .horizontal-bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .h-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .h-bar-label {
+            min-width: 80px;
+            color: var(--limbik-white);
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .h-bar {
+            flex: 1;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .h-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(90deg, var(--limbik-primary-purple), var(--limbik-primary-green));
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+        }
+
+        .h-bar-value {
+            color: var(--limbik-white);
+            font-weight: 600;
+            font-size: 0.8em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        .donut-chart {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            height: 100%;
+        }
+
+        .donut-visual {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--limbik-primary-purple) 0deg 276deg,
+                var(--limbik-primary-green) 276deg 315deg,
+                rgba(99, 102, 241, 0.6) 315deg 332deg,
+                rgba(0, 200, 150, 0.6) 332deg 345deg,
+                rgba(139, 92, 246, 0.4) 345deg 349deg,
+                var(--limbik-gray-medium) 349deg 360deg
+            );
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .donut-visual::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 100px;
+            background: var(--limbik-surface);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .legend-text {
+            color: var(--limbik-white);
+            font-size: 0.9em;
+        }
+
+        .chart-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--limbik-primary-green);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: var(--limbik-gray-light);
+            margin-top: 5px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .css-chart {
+            animation: slideIn 0.6s ease forwards;
+        }
+
+        .insights-section {
+            background: linear-gradient(135deg, var(--limbik-navy) 0%, var(--limbik-surface) 100%);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .insights-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--limbik-white);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .insights-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--limbik-primary-green), transparent);
+        }
+
+        .insight-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--limbik-primary-purple);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .insight-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .insight-item h4 {
+            margin: 0 0 12px 0;
+            color: var(--limbik-white);
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .insight-item p {
+            margin: 0;
+            color: var(--limbik-gray-light);
+            line-height: 1.6;
+        }
+
+        .insight-item strong {
+            color: var(--limbik-primary-green);
+            font-weight: 600;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .limbik-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--limbik-primary-purple), var(--limbik-primary-green));
+            color: var(--limbik-white);
+            font-weight: 700;
+            font-size: 1.1em;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .limbik-logo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .limbik-logo-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--limbik-white);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--limbik-primary-purple);
+            font-size: 0.8em;
+        }
+
+        .powered-by {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--limbik-gray-medium);
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .dashboard {
+                padding: 15px;
+            }
+        }
+
+        /* Chart.js custom colors for Limbik brand */
+        .chartjs-tooltip {
+            background: var(--limbik-surface) !important;
+            border: 1px solid var(--limbik-accent-orange) !important;
+            color: var(--limbik-white) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+
+    <div class="dashboard">
+        <div class="header">
+            <a href="https://limbik.com" class="limbik-logo">
+                <div class="limbik-logo-icon">L</div>
+                LIMBIK
+            </a>
+            <h1>Forecast Analysis Dashboard</h1>
+            <p class="subtitle">Comprehensive cognitive AI analysis of 111,020 forecasting records</p>
+            <p class="tagline">Simulate human response in seconds. Make better decisions, faster.</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-number" style="color: var(--limbik-primary-green);">98.3%</div>
+                <div class="metric-label">Processing Success Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number" style="color: var(--limbik-primary-purple);">57.4%</div>
+                <div class="metric-label">Good Prediction Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number" style="color: var(--limbik-primary-green);">69.4%</div>
+                <div class="metric-label">Explanation Coverage</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number" style="color: var(--limbik-primary-purple);">157</div>
+                <div class="metric-label">Avg Characters per Text</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="chart-container">
+                <div class="chart-title">⏱️ Hourly Activity Distribution</div>
+                <div class="chart-wrapper">
+                    <div class="css-chart">
+                        <div class="bar-chart">
+                            <div class="bar" style="height: 1%;">
+                                <div class="bar-value">246</div>
+                                <div class="bar-label">0</div>
+                            </div>
+                            <div class="bar" style="height: 1.5%;">
+                                <div class="bar-value">370</div>
+                                <div class="bar-label">1</div>
+                            </div>
+                            <div class="bar" style="height: 1.2%;">
+                                <div class="bar-value">296</div>
+                                <div class="bar-label">2</div>
+                            </div>
+                            <div class="bar" style="height: 1.5%;">
+                                <div class="bar-value">375</div>
+                                <div class="bar-label">3</div>
+                            </div>
+                            <div class="bar" style="height: 3.5%;">
+                                <div class="bar-value">934</div>
+                                <div class="bar-label">4</div>
+                            </div>
+                            <div class="bar" style="height: 4%;">
+                                <div class="bar-value">1,140</div>
+                                <div class="bar-label">5</div>
+                            </div>
+                            <div class="bar" style="height: 4.5%;">
+                                <div class="bar-value">1,193</div>
+                                <div class="bar-label">6</div>
+                            </div>
+                            <div class="bar" style="height: 4%;">
+                                <div class="bar-value">1,012</div>
+                                <div class="bar-label">7</div>
+                            </div>
+                            <div class="bar" style="height: 5.5%;">
+                                <div class="bar-value">1,494</div>
+                                <div class="bar-label">8</div>
+                            </div>
+                            <div class="bar" style="height: 12%;">
+                                <div class="bar-value">3,449</div>
+                                <div class="bar-label">9</div>
+                            </div>
+                            <div class="bar" style="height: 95%;">
+                                <div class="bar-value">33,680</div>
+                                <div class="bar-label">10</div>
+                            </div>
+                            <div class="bar" style="height: 100%;">
+                                <div class="bar-value">39,353</div>
+                                <div class="bar-label">11</div>
+                            </div>
+                            <div class="bar" style="height: 16%;">
+                                <div class="bar-value">4,530</div>
+                                <div class="bar-label">12</div>
+                            </div>
+                            <div class="bar" style="height: 14%;">
+                                <div class="bar-value">3,971</div>
+                                <div class="bar-label">13</div>
+                            </div>
+                            <div class="bar" style="height: 17%;">
+                                <div class="bar-value">4,957</div>
+                                <div class="bar-label">14</div>
+                            </div>
+                            <div class="bar" style="height: 16%;">
+                                <div class="bar-value">4,584</div>
+                                <div class="bar-label">15</div>
+                            </div>
+                            <div class="bar" style="height: 10%;">
+                                <div class="bar-value">2,833</div>
+                                <div class="bar-label">16</div>
+                            </div>
+                            <div class="bar" style="height: 9.5%;">
+                                <div class="bar-value">2,755</div>
+                                <div class="bar-label">17</div>
+                            </div>
+                            <div class="bar" style="height: 5%;">
+                                <div class="bar-value">1,370</div>
+                                <div class="bar-label">18</div>
+                            </div>
+                            <div class="bar" style="height: 3.5%;">
+                                <div class="bar-value">1,022</div>
+                                <div class="bar-label">19</div>
+                            </div>
+                            <div class="bar" style="height: 1.2%;">
+                                <div class="bar-value">347</div>
+                                <div class="bar-label">20</div>
+                            </div>
+                            <div class="bar" style="height: 1.8%;">
+                                <div class="bar-value">449</div>
+                                <div class="bar-label">21</div>
+                            </div>
+                            <div class="bar" style="height: 1.8%;">
+                                <div class="bar-value">454</div>
+                                <div class="bar-label">22</div>
+                            </div>
+                            <div class="bar" style="height: 0.8%;">
+                                <div class="bar-value">206</div>
+                                <div class="bar-label">23</div>
+                            </div>
+                        </div>
+                        <div class="chart-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">65.7%</span>
+                                <div class="stat-label">Peak Hours (10-11 AM)</div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">39,353</span>
+                                <div class="stat-label">Max Hour (11 AM)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🎯 Content Type Success Rates</div>
+                <div class="chart-wrapper">
+                    <div class="css-chart">
+                        <div class="horizontal-bar-chart">
+                            <div class="h-bar-item">
+                                <div class="h-bar-label">Narrative</div>
+                                <div class="h-bar">
+                                    <div class="h-bar-fill" style="width: 91.8%;">
+                                        <span class="h-bar-value">91.8%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-bar-item">
+                                <div class="h-bar-label">Document</div>
+                                <div class="h-bar">
+                                    <div class="h-bar-fill" style="width: 90.7%;">
+                                        <span class="h-bar-value">90.7%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-bar-item">
+                                <div class="h-bar-label">Message</div>
+                                <div class="h-bar">
+                                    <div class="h-bar-fill" style="width: 85.0%;">
+                                        <span class="h-bar-value">85.0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-bar-item">
+                                <div class="h-bar-label">Topic</div>
+                                <div class="h-bar">
+                                    <div class="h-bar-fill" style="width: 71.6%;">
+                                        <span class="h-bar-value">71.6%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">90%+</span>
+                                <div class="stat-label">Top Performers</div>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">20.2pp</span>
+                                <div class="stat-label">Performance Gap</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">📊 Content Type Distribution</div>
+            <div class="chart-wrapper">
+                <div class="css-chart">
+                    <div class="donut-chart">
+                        <div class="donut-visual"></div>
+                        <div class="donut-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: var(--limbik-primary-purple);"></div>
+                                <div class="legend-text">Message: 76.9% (85,393)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: var(--limbik-primary-green);"></div>
+                                <div class="legend-text">Topic: 10.9% (12,127)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: rgba(99, 102, 241, 0.6);"></div>
+                                <div class="legend-text">Narrative: 4.8% (5,277)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: rgba(0, 200, 150, 0.6);"></div>
+                                <div class="legend-text">Document: 3.6% (4,004)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: rgba(139, 92, 246, 0.4);"></div>
+                                <div class="legend-text">Recommendation: 1.0% (1,150)</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: var(--limbik-gray-medium);"></div>
+                                <div class="legend-text">Other: 2.8% (3,069)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">111,020</span>
+                            <div class="stat-label">Total Records</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">8</span>
+                            <div class="stat-label">Content Types</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">76.9%</span>
+                            <div class="stat-label">Message Dominance</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">🎯 Most Interesting Discoveries</div>
+            
+            <div class="insight-item">
+                <h4>👤 Extreme User Concentration</h4>
+                <p>One user (sean@limbikanalytics.com) accounts for <strong>66.8% of all activity</strong> with 74,179 forecasts and an impressive 73.6% success rate. This suggests either a power user or an automated system, representing a significant concentration risk and opportunity.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>📅 Wednesday Success Anomaly</h4>
+                <p><strong>Wednesdays show 75.6% success rate</strong> compared to 20-30% on other weekdays. This dramatic difference suggests either model performance varies by day, different types of content are created mid-week, or user behavior patterns change on Wednesdays.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>📝 Sweet Spot for Text Length</h4>
+                <p><strong>Medium-length content (101-500 characters) has the highest success rate at 85.6%</strong>, suggesting there's an optimal length where users provide enough context without overwhelming the model. Very short (74.3%) and very long (82.1%) content performs less well.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>⏰ Morning Rush Hour Effect</h4>
+                <p><strong>65.7% of all activity happens in just 2 hours (10-11 AM)</strong>, with success rates of 74-77% during these peak times. This suggests either scheduled automation or strong user habits around morning planning sessions.</p>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">🚀 Key Opportunities</div>
+            
+            <div class="insight-item">
+                <h4>⚡ Time-Based Optimization</h4>
+                <p>The <strong>51 percentage point difference</strong> between peak (76.7%) and off-peak (25.4%) success rates indicates huge potential for model improvements during low-activity hours. Optimizing for off-peak performance could significantly boost overall metrics.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>📋 Content Type Expansion</h4>
+                <p>Narrative and Document types show <strong>90%+ success rates but represent only 8.4% of volume</strong>. Expanding these high-performing content types through user guidance or interface changes could improve overall system performance.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>🎓 User Success Coaching</h4>
+                <p>Several high-volume users have very low success rates (as low as 1.9%), while the top performer achieves 73.6%. <strong>Targeted user education</strong> based on successful user patterns could significantly impact overall metrics.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>📊 Data Quality Enhancement</h4>
+                <p><strong>32.3% of records (35,863) lack success scores</strong>, representing a major opportunity for improved measurement and model training. Better score coverage could enhance both performance insights and system learning.</p>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">🔍 Additional Notable Patterns</div>
+            
+            <div class="insight-item">
+                <h4>🏆 Power User Insights</h4>
+                <p>Top users show dramatic variation in success rates (1.9% to 73.6%) despite similar activity levels. High performers tend to use more diverse content types and maintain consistent activity across different time windows.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>🌍 Geographic Focus</h4>
+                <p>US Adults dominate targeting (44% of sample), followed by Switzerland Adults (20%) and Germany Adults (8%). This concentration on developed markets suggests opportunities for geographic expansion or deeper market penetration.</p>
+            </div>
+            
+            <div class="insight-item">
+                <h4>🔧 Model Evolution</h4>
+                <p>The latest model variant (llm_v3_2_2) shows 84.9% success across 67,660 scored records, while earlier versions like llm_v3_1 achieved 89.3% on smaller samples, suggesting potential areas for model refinement.</p>
+            </div>
+        </div>
+
+        <div class="powered-by">
+            <p>Powered by Limbik Cognitive AI Platform | Analysis through May 21, 2025</p>
+        </div>
+    </div>
+
+    <script>
+    <script>
+        // Simple animation on page load
+        window.addEventListener('load', function() {
+            console.log('Dashboard loaded successfully with CSS charts');
+            
+            // Animate bars growing
+            setTimeout(function() {
+                const bars = document.querySelectorAll('.h-bar-fill');
+                bars.forEach((bar, index) => {
+                    const finalWidth = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = finalWidth;
+                    }, index * 200);
+                });
+            }, 500);
+        });
+    </script>d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Message (76.9%)', 'Topic (10.9%)', 'Narrative (4.8%)', 'Document (3.6%)', 'Recommendation (1.0%)', 'Other (2.8%)'],
+                            datasets: [{
+                                data: [85393, 12127, 5277, 4004, 1150, 3069],
+                                backgroundColor: [
+                                    'rgba(255, 107, 53, 0.8)',
+                                    'rgba(0, 245, 255, 0.8)',
+                                    'rgba(255, 107, 53, 0.6)',
+                                    'rgba(0, 245, 255, 0.6)',
+                                    'rgba(255, 107, 53, 0.4)',
+                                    'rgba(108, 117, 125, 0.6)'
+                                ],
+                                borderColor: [
+                                    '#FF6B35',
+                                    '#00F5FF',
+                                    '#FF6B35',
+                                    '#00F5FF',
+                                    '#FF6B35',
+                                    '#6C757D'
+                                ],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        boxWidth: 15,
+                                        padding: 20,
+                                        usePointStyle: true,
+                                        color: '#FFFFFF'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: '#1E2329',
+                                    titleColor: '#FFFFFF',
+                                    bodyColor: '#FFFFFF',
+                                    borderColor: '#FF6B35',
+                                    borderWidth: 1,
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.label || '';
+                                            const value = context.formattedValue;
+                                            const percentage = ((context.parsed / context.dataset.data.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+                                            return `${label}: ${value} (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    console.log('Content chart created successfully');
+                }
+                
+                console.log('All charts initialized successfully');
+            } catch (error) {
+                console.error('Chart initialization error:', error);
+                showChartFallbacks();
+            }
+        }
+    </script>
+</body>
+</html>
