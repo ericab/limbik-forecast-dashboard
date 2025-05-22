@@ -223,8 +223,10 @@
             display: flex;
             align-items: end;
             height: 200px;
-            gap: 2px;
+            gap: 3px;
             margin: 20px 0;
+            width: 100%;
+            justify-content: space-between;
         }
 
         .bar {
@@ -232,7 +234,9 @@
             border-radius: 2px 2px 0 0;
             transition: all 0.3s ease;
             position: relative;
-            min-width: 8px;
+            flex: 1;
+            min-width: 12px;
+            max-width: 25px;
         }
 
         .bar:hover {
@@ -245,23 +249,26 @@
             bottom: -25px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.7em;
+            font-size: 0.65em;
             color: var(--limbik-gray-medium);
             writing-mode: horizontal-tb;
+            white-space: nowrap;
         }
 
         .bar-value {
             position: absolute;
-            top: -25px;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.7em;
+            font-size: 0.65em;
             color: var(--limbik-white);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 3px 6px;
             border-radius: 4px;
             opacity: 0;
             transition: opacity 0.3s ease;
+            white-space: nowrap;
+            z-index: 10;
         }
 
         .bar:hover .bar-value {
@@ -954,7 +961,6 @@
                 console.log('All charts initialized successfully');
             } catch (error) {
                 console.error('Chart initialization error:', error);
-                showChartFallbacks();
             }
         }
     </script>
